@@ -11,7 +11,11 @@ esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: arduino
-
+    
+# Dashboard import if you want to adopt the device on your esphome dashboard
+dashboard_import:
+  package_import_url: github://lagomcontrol/skyfandc_esphome/skyfandc.yaml@main
+    
 # Enable logging
 logger:
 
@@ -128,4 +132,5 @@ fan:
             id(tuyamcu).set_enum_datapoint_value(8, 0);
           } else {
             id(tuyamcu).set_enum_datapoint_value(8, 1);
+
           }
