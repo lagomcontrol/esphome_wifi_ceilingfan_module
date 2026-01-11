@@ -1,6 +1,6 @@
 substitutions:
-  name: SkyFan DC
-  friendly_name: skyfandc01
+  name: skyfandc01
+  friendly_name: SkyFan DC01
 
 esphome:
   name: ${name}
@@ -134,3 +134,4 @@ fan:
             id(tuyamcu).set_enum_datapoint_value(8, 1);
 
           }
+
