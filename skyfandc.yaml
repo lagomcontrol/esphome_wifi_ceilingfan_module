@@ -5,6 +5,10 @@ substitutions:
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: lagomcontrol.skyfandc_esphome
+    version: "1.0"
 
 # Define the board for the compiler
 esp32:
@@ -15,6 +19,7 @@ esp32:
 # Dashboard import if you want to adopt the device on your esphome dashboard
 dashboard_import:
   package_import_url: github://lagomcontrol/skyfandc_esphome/skyfandc.yaml@main
+  import_full_config: false
 
 # Enable logging
 logger:
@@ -134,5 +139,4 @@ fan:
             id(tuyamcu).set_enum_datapoint_value(8, 1);
 
           }
-
 
