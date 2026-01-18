@@ -60,22 +60,22 @@ status_led:
 
 tuya:
   id: tuyamcu
-  on_datapoint_update:  # <-- Moved inside tuya: section
+  on_datapoint_update:
     # Listen for power state changes from remote
     - sensor_datapoint: 1
       datapoint_type: bool
       then:
         - lambda: |-
             id(skyfandc_fan).make_call().set_state(x).perform();
-    
-    # Listen for speed changes from remote and remap
+
+    # Listen for speed changes from remote
     - sensor_datapoint: 3
       datapoint_type: int
       then:
         - lambda: |-
             static const std::map<int, int> speed_map = {{1,1}, {6,2}, {2,3}, {3,4}, {4,5}, {5,6}};
             id(skyfandc_fan).make_call().set_speed(speed_map.at(x)).perform();
-    
+
     # Listen for direction changes from remote
     - sensor_datapoint: 8
       datapoint_type: enum
@@ -85,60 +85,29 @@ tuya:
               .set_direction((x == 0) ? fan::FanDirection::FORWARD : fan::FanDirection::REVERSE)
               .perform();
 
-    # Light on/off from remote
+    # Listen for light on/off from remote
     - sensor_datapoint: 15
       datapoint_type: bool
       then:
         - lambda: |-
-            id(skip_light_update) = true;
             id(skyfan_light).make_call().set_state(x).perform();
-        - delay: 500ms
-        - lambda: 'id(skip_light_update) = false;'
-    
-    # Brightness from remote
+
+    # Listen for brightness from remote
     - sensor_datapoint: 16
       datapoint_type: int
       then:
         - lambda: |-
-            id(skip_light_update) = true;
             id(skyfan_light).make_call().set_brightness(x / 5.0).perform();
-        - delay: 500ms
-        - lambda: 'id(skip_light_update) = false;'
-    
-    # Color temp from remote
+
+    # Listen for color temp from remote
     - sensor_datapoint: 19
       datapoint_type: enum
       then:
         - lambda: |-
-            id(skip_light_update) = true;
             float mireds = (x == 0) ? 200.0 : (x == 1) ? 250.0 : 333.3;
             id(skyfan_light).make_call().set_color_temperature(mireds).perform();
-        - delay: 500ms
-        - lambda: 'id(skip_light_update) = false;'
-
-select:
-  # Hidden Tuya entity that actually control the hardware
-  - platform: tuya
-    id: color_temp_internal
-    name: "${friendly_name} Color Temp Internal"
-    internal: true
-    enum_datapoint: 19
-    options:
-      0: 'Warm White (3000K)'
-      1: 'Natural White (4000K)'
-      2: 'Cool White (5000K)'
 
 light:
-  # Hidden Tuya entity that actually control the hardware
-  - platform: tuya
-    id: skyfan_light_internal
-    name: "${friendly_name} Light Internal"
-    internal: true
-    switch_datapoint: 15
-    dimmer_datapoint: 16
-    min_value: 0
-    max_value: 5
-
   - platform: cwww
     id: skyfan_light
     name: "${friendly_name} Light"
@@ -148,29 +117,29 @@ light:
     warm_white_color_temperature: 3000 K
     constant_brightness: true
     default_transition_length: 0s
-    
+
+    # Send commands to device
     on_turn_on:
       - lambda: |-
-          if (id(skip_light_update)) return;
           id(tuyamcu).set_boolean_datapoint_value(15, true);
-    
+
     on_turn_off:
       - lambda: |-
-          if (id(skip_light_update)) return;
           id(tuyamcu).set_boolean_datapoint_value(15, false);
-    
+
     on_state:
       - lambda: |-
-          if (id(skip_light_update)) return;
+          if (!id(skyfan_light).current_values.is_on()) return;
           
-          if (id(skyfan_light).current_values.is_on()) {
-            auto brightness = id(skyfan_light).current_values.get_brightness();
-            id(skyfan_light_internal).make_call().set_brightness(brightness).perform();
-            
-            auto color_temp_mireds = id(skyfan_light).current_values.get_color_temperature();
-            int enum_value = (color_temp_mireds > 291) ? 2 : (color_temp_mireds > 225) ? 1 : 0;
-            id(tuyamcu).set_enum_datapoint_value(19, enum_value);
-          }
+          // Handle brightness
+          auto brightness = id(skyfan_light).current_values.get_brightness();
+          int discrete_level = (int)(brightness * 5);
+          id(tuyamcu).set_integer_datapoint_value(16, discrete_level);
+          
+          // Handle color temp
+          auto color_temp_mireds = id(skyfan_light).current_values.get_color_temperature();
+          int enum_value = (color_temp_mireds > 291) ? 2 : (color_temp_mireds > 225) ? 1 : 0;
+          id(tuyamcu).set_enum_datapoint_value(19, enum_value);
 
 fan:
   - platform: template
@@ -179,8 +148,8 @@ fan:
     speed_count: 6
     has_direction: true
     has_oscillating: false
-    
-    # Send commands from HA to Tuya with remapping
+
+    # Send commands to device
     on_speed_set:
       - lambda: |-
           int speeds[] = {0, 1, 6, 2, 3, 4, 5};
@@ -188,19 +157,13 @@ fan:
 
     on_turn_on:
       - lambda: 'id(tuyamcu).set_boolean_datapoint_value(1, true);'
-    
+
     on_turn_off:
       - lambda: 'id(tuyamcu).set_boolean_datapoint_value(1, false);'
-    
+
     on_direction_set:
       - lambda: |-
           id(tuyamcu).set_enum_datapoint_value(8, (x == fan::FanDirection::FORWARD) ? 0 : 1);
-
-globals:
-  - id: skip_light_update
-    type: bool
-    restore_value: no
-    initial_value: 'false'
 
 output:
   - platform: template
@@ -208,7 +171,7 @@ output:
     type: float
     write_action:
       - lambda: 'return;'
-  
+
   - platform: template
     id: dummy_cold
     type: float
