@@ -51,8 +51,8 @@ wifi:
 captive_portal:
 
 uart:
-  rx_pin: GPIO20
-  tx_pin: GPIO21
+  rx_pin: GPIO21
+  tx_pin: GPIO20
   baud_rate: 9600 
 
 status_led:
@@ -60,54 +60,122 @@ status_led:
 
 tuya:
   id: tuyamcu
-  on_datapoint_update:
+  on_datapoint_update:  # <-- Moved inside tuya: section
     # Listen for power state changes from remote
     - sensor_datapoint: 1
       datapoint_type: bool
       then:
         - lambda: |-
-            auto call = id(patio_fan).make_call();
-            if (x) {
-              call.set_state(true);
-            } else {
-              call.set_state(false);
-            }
-            call.perform();
+            id(skyfandc_fan).make_call().set_state(x).perform();
     
     # Listen for speed changes from remote and remap
     - sensor_datapoint: 3
       datapoint_type: int
       then:
         - lambda: |-
-            int ha_speed;
-            if (x == 1) ha_speed = 1;      // Tuya 1 (16%) -> HA Speed 1
-            else if (x == 6) ha_speed = 2;  // Tuya 6 (33%) -> HA Speed 2
-            else if (x == 2) ha_speed = 3;  // Tuya 2 (50%) -> HA Speed 3
-            else if (x == 3) ha_speed = 4;  // Tuya 3 (67%) -> HA Speed 4
-            else if (x == 4) ha_speed = 5;  // Tuya 4 (83%) -> HA Speed 5
-            else ha_speed = 6;              // Tuya 5 (100%) -> HA Speed 6
-            
-            auto call = id(patio_fan).make_call();
-            call.set_speed(ha_speed);
-            call.perform();
+            static const std::map<int, int> speed_map = {{1,1}, {6,2}, {2,3}, {3,4}, {4,5}, {5,6}};
+            id(skyfandc_fan).make_call().set_speed(speed_map.at(x)).perform();
     
     # Listen for direction changes from remote
     - sensor_datapoint: 8
       datapoint_type: enum
       then:
         - lambda: |-
-            auto call = id(patio_fan).make_call();
-            if (x == 0) {
-              call.set_direction(fan::FanDirection::FORWARD);
-            } else {
-              call.set_direction(fan::FanDirection::REVERSE);
-            }
-            call.perform();
+            id(skyfandc_fan).make_call()
+              .set_direction((x == 0) ? fan::FanDirection::FORWARD : fan::FanDirection::REVERSE)
+              .perform();
+
+    # Light on/off from remote
+    - sensor_datapoint: 15
+      datapoint_type: bool
+      then:
+        - lambda: |-
+            id(skip_light_update) = true;
+            id(skyfan_light).make_call().set_state(x).perform();
+        - delay: 500ms
+        - lambda: 'id(skip_light_update) = false;'
+    
+    # Brightness from remote
+    - sensor_datapoint: 16
+      datapoint_type: int
+      then:
+        - lambda: |-
+            id(skip_light_update) = true;
+            id(skyfan_light).make_call().set_brightness(x / 5.0).perform();
+        - delay: 500ms
+        - lambda: 'id(skip_light_update) = false;'
+    
+    # Color temp from remote
+    - sensor_datapoint: 19
+      datapoint_type: enum
+      then:
+        - lambda: |-
+            id(skip_light_update) = true;
+            float mireds = (x == 0) ? 200.0 : (x == 1) ? 250.0 : 333.3;
+            id(skyfan_light).make_call().set_color_temperature(mireds).perform();
+        - delay: 500ms
+        - lambda: 'id(skip_light_update) = false;'
+
+select:
+  # Hidden Tuya entity that actually control the hardware
+  - platform: tuya
+    id: color_temp_internal
+    name: "${friendly_name} Color Temp Internal"
+    internal: true
+    enum_datapoint: 19
+    options:
+      0: 'Warm White (3000K)'
+      1: 'Natural White (4000K)'
+      2: 'Cool White (5000K)'
+
+light:
+  # Hidden Tuya entity that actually control the hardware
+  - platform: tuya
+    id: skyfan_light_internal
+    name: "${friendly_name} Light Internal"
+    internal: true
+    switch_datapoint: 15
+    dimmer_datapoint: 16
+    min_value: 0
+    max_value: 5
+
+  - platform: cwww
+    id: skyfan_light
+    name: "${friendly_name} Light"
+    cold_white: dummy_cold
+    warm_white: dummy_warm
+    cold_white_color_temperature: 5000 K
+    warm_white_color_temperature: 3000 K
+    constant_brightness: true
+    default_transition_length: 0s
+    
+    on_turn_on:
+      - lambda: |-
+          if (id(skip_light_update)) return;
+          id(tuyamcu).set_boolean_datapoint_value(15, true);
+    
+    on_turn_off:
+      - lambda: |-
+          if (id(skip_light_update)) return;
+          id(tuyamcu).set_boolean_datapoint_value(15, false);
+    
+    on_state:
+      - lambda: |-
+          if (id(skip_light_update)) return;
+          
+          if (id(skyfan_light).current_values.is_on()) {
+            auto brightness = id(skyfan_light).current_values.get_brightness();
+            id(skyfan_light_internal).make_call().set_brightness(brightness).perform();
+            
+            auto color_temp_mireds = id(skyfan_light).current_values.get_color_temperature();
+            int enum_value = (color_temp_mireds > 291) ? 2 : (color_temp_mireds > 225) ? 1 : 0;
+            id(tuyamcu).set_enum_datapoint_value(19, enum_value);
+          }
 
 fan:
   - platform: template
-    id: patio_fan
-    name: ${friendly_name}
+    id: skyfandc_fan
+    name: ${friendly_name} Fan
     speed_count: 6
     has_direction: true
     has_oscillating: false
@@ -115,16 +183,9 @@ fan:
     # Send commands from HA to Tuya with remapping
     on_speed_set:
       - lambda: |-
-          int tuya_speed;
-          if (x == 1) tuya_speed = 1;      // HA Speed 1 -> Tuya 1 (16%)
-          else if (x == 2) tuya_speed = 6;  // HA Speed 2 -> Tuya 6 (33%)
-          else if (x == 3) tuya_speed = 2;  // HA Speed 3 -> Tuya 2 (50%)
-          else if (x == 4) tuya_speed = 3;  // HA Speed 4 -> Tuya 3 (67%)
-          else if (x == 5) tuya_speed = 4;  // HA Speed 5 -> Tuya 4 (83%)
-          else tuya_speed = 5;              // HA Speed 6 -> Tuya 5 (100%)
-          
-          id(tuyamcu).set_integer_datapoint_value(3, tuya_speed);
-    
+          int speeds[] = {0, 1, 6, 2, 3, 4, 5};
+          id(tuyamcu).set_integer_datapoint_value(3, speeds[x]);
+
     on_turn_on:
       - lambda: 'id(tuyamcu).set_boolean_datapoint_value(1, true);'
     
@@ -133,10 +194,23 @@ fan:
     
     on_direction_set:
       - lambda: |-
-          if (x == fan::FanDirection::FORWARD) {
-            id(tuyamcu).set_enum_datapoint_value(8, 0);
-          } else {
-            id(tuyamcu).set_enum_datapoint_value(8, 1);
+          id(tuyamcu).set_enum_datapoint_value(8, (x == fan::FanDirection::FORWARD) ? 0 : 1);
 
-          }
+globals:
+  - id: skip_light_update
+    type: bool
+    restore_value: no
+    initial_value: 'false'
 
+output:
+  - platform: template
+    id: dummy_warm
+    type: float
+    write_action:
+      - lambda: 'return;'
+  
+  - platform: template
+    id: dummy_cold
+    type: float
+    write_action:
+      - lambda: 'return;'
