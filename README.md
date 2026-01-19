@@ -41,9 +41,9 @@ I wanted all controls to map to HA native Fan & Light UI elements without relyin
 - - 5 -> 100%
 - ### Fan Speed Mapping ( 3 )                                                                                                     
 - The Tuya module uses a non-sequential speed mapping which is handled automatically:
-- - 1 -> 16.6%
-- - 2 -> 33.3%
-- - 3 -> 50.0%
-- - 4 -> 66.6%
-- - 5 -> 83.3%
-- - 6 -> 100%
+- - 1   -> 16.6%
+- - ECO -> 33.3%
+- - 2   -> 50.0%
+- - 3   -> 66.6%
+- - 4   -> 83.3%
+- - 5   -> 100%
