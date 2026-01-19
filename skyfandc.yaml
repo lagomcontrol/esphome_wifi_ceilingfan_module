@@ -216,9 +216,3 @@ sensor:
       return id(skyfan_light).state 
         ? id(skyfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
-
-
-
-
-
-
