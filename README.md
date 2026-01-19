@@ -1,17 +1,18 @@
-# Ventair Skyfan DC - ESPHome Implementation
+# WiFi Ceiling Fan ESPHome Module ( with SkyFan DC compatibility )
 
-ESPHome configuration for the Ventair SkyFan DC ceiling fan Tuya module (SKYAPPCM). This project replaces the cloud-dependent module with a local ESP based module via ESPHome, enabling full local integration with Home Assistant. 
+<b>WARNING: This firmware or it's associated module is not endorsed or approved by Ventair. It’s use will void any warranties you may have with them.
+NOTE: To use the OEM Ventair app you must use the factory module. This is for Home Assistant integration only and is not intended to provide OEM functionality.</b>
+
+ESPHome firmware for the WiFi Ceiling Fan module developed to be contatible with the Ventair SkyFan DC ceiling fan range as an alternative to the official module (SKYAPPCM). This project replaces the cloud-dependent module with a local ESP based module via ESPHome, enabling full local integration with Home Assistant.
 
 Fan Speed, Brightness & Color Temperature work with the native HA Light & Fan UI panels.
 
 This module can be bought Plug & Play from here:
-https://lagomcontrol.com.au/product/skyfan-esphome/
-
-NOTE: To use the factory app you must use the factory module. This is for Home Assistant integration only.
+https://lagomcontrol.com.au/product/skyfan-esphome
 
 ## Overview
 
-This project provides a complete ESPHome implementation for the Ventair Skyfan DC ceiling fan, which features:
+This project provides a complete Wifi ESPHome based module intended to be compatible with the Ventair Skyfan DC ceiling fan range:
   - 6-speed DC motor fan control
   - Reversible fan direction
   - Integrated LED light with adjustable brightness (5 steps)
@@ -36,7 +37,7 @@ Functions such as timers or sleep mode are not implemented and assumed handled b
   - Color Temperature ( 3000K / 4000K / 5000K )
 
 ## Technical Details
-I wanted all controls to map to HA native Fan & Light UI elements without relying on secondary dropdowns or external libraries. As a result, because of how the Datapoint's work on this MCU, we have to intercept all calls with lambda functions to map HA control values to the Tuya MCU values.
+I wanted all controls to map to HA native Fan & Light UI elements without relying on secondary dropdowns or external libraries. As a result, because of how the Datapoint's work on this MCU, we have to intercept all calls with lambda functions to map HA control values to the MCU values.
 
 - ### Color Temperature Mapping ( 19 )
   - 0 -> 5000K
@@ -58,7 +59,7 @@ I wanted all controls to map to HA native Fan & Light UI elements without relyin
 
 - ## Credits
 
-Tuya Datapoints, Module Pinouts & Inspiration originally from here.
+Datapoints, Module Pinouts & Inspiration originally from here.
 - https://github.com/jeggleston1981/skyfandc
 
 Similar Projects
