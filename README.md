@@ -16,6 +16,8 @@ This project provides a complete ESPHome implementation for the Ventair Skyfan D
   - Adjustable color temperature (3 steps)
   - Full bidirectional communication so remote works and feeds back to Home Assistant
   - All controls are mapped to native HA UI elements
+
+Functions such as timers or sleep mode are not implemented and assumed handled by Home Assistant.
       
 ## Hardware
   - ESP32-C3-SuperMini (esp32-c3-devkitm-1)
