@@ -18,11 +18,32 @@ This project provides a complete ESPHome implementation for the Ventair Skyfan D
                      
 - ## Features
 - ### Fan Control
-- - 6-speed operation with optimized speed mapping
+- - Fan on/off control 
+- - Fan Speeds ( 6 Steps )
 - - Forward and reverse direction control
-- - Power on/off control
-- - Bidirectional sync with remote control       
 - ### Light Control
-- - On/Off
+- - Light on/off control 
 - - Brightness ( 5 Steps ) 
 - - Color Temperature ( 3000K / 4000K / 5000K )
+
+- ## Technical Details
+I wanted all controls to map to HA native Fan & Light UI elements without relying on secondaray dropdowns. However becuase of how the Datapoint's work on this fan, we have to intercept all calls with lambda functions to map HA control values to the Tuya MCU values.
+
+- ### Color Temperature Mapping ( 19 )
+- - 0 -> 5000K
+- - 1 -> 4000K
+- - 2 -> 3000K
+- ### Brightness Mapping ( 16 )
+- - 1 -> 20%
+- - 2 -> 40%
+- - 3 -> 60%
+- - 4 -> 80%
+- - 5 -> 100%
+- ### Fan Speed Mapping ( 3 )                                                                                                     
+- The Tuya module uses a non-sequential speed mapping which is handled automatically:
+- - 1 -> 16.6%
+- - 2 -> 33.3%
+- - 3 -> 50.0%
+- - 4 -> 66.6%
+- - 5 -> 83.3%
+- - 6 -> 100%
