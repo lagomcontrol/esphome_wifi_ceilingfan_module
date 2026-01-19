@@ -13,8 +13,8 @@ This project provides a complete ESPHome implementation for the Ventair Skyfan D
 - - All controls are mapped to native HA UI elements
        
 - ## Hardware
-- - ESP32-C3-SuperMini (esp32-c3-devkitm-1)
-- - Custom Adaptor PCB
+  - ESP32-C3-SuperMini (esp32-c3-devkitm-1)
+  - Custom Adaptor PCB
                      
 - ## Features
 - ### Fan Control
