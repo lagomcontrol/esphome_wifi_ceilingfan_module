@@ -184,11 +184,11 @@ sensor:
   - platform: template
     id: fan_power
     name: ${friendly_name} input power
-    update_interval: 30s
     unit_of_measurement: "W"
     device_class: "power"
     state_class: "measurement"
     accuracy_decimals: 1
+    update_interval: 30s
     lambda: |-
       static const float SKY903[7]   = {0,3,4.8,7,12,19.5,32};
       static const float SKY1203[7]  = {0,3.6,5.4,8,15,22,32.5};
@@ -214,6 +214,7 @@ sensor:
       return id(skyfan_light).state 
         ? id(skyfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
 
 
 
