@@ -59,5 +59,8 @@ I wanted all controls to map to HA native Fan & Light UI elements without relyin
 - ## Credits
 
 Tuya Datapoints, Module Pinouts & Inspiration originally from here.
-- https://github.com/SirMrDexter/skyfandc
 - https://github.com/jeggleston1981/skyfandc
+
+Similar Projects
+- https://github.com/Jagomeister/ESPHome-SkyFan-DC
+- https://github.com/SirMrDexter/skyfandc
