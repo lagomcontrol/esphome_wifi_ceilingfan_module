@@ -212,9 +212,10 @@ sensor:
     accuracy_decimals: 1
     update_interval: 30s
     lambda: |-
-      return id(skyfan_light).current_values.is_on() 
+      return id(skyfan_light).state 
         ? id(skyfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
     disabled_by_default: true
+
 
 
