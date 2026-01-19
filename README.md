@@ -5,12 +5,12 @@ ESPHome configuration for the Ventair SkyFan DC ceiling fan Tuya module (SKYAPPC
 ## Overview
 
 This project provides a complete ESPHome implementation for the Ventair Skyfan DC ceiling fan, which features:-
-- - 6-speed DC motor fan control
-- - Reversible fan direction
-- - Integrated LED light with adjustable brightness (5 steps)
-- - Adjustable color temperature (3 steps)
-- - Full bidirectional communication so remote works and feeds back to Home Assistant
-- - All controls are mapped to native HA UI elements
+- 6-speed DC motor fan control
+- Reversible fan direction
+- Integrated LED light with adjustable brightness (5 steps)
+- Adjustable color temperature (3 steps)
+- Full bidirectional communication so remote works and feeds back to Home Assistant
+- All controls are mapped to native HA UI elements
       
 - ## Hardware
   - ESP32-C3-SuperMini (esp32-c3-devkitm-1)
