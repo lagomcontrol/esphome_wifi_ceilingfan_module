@@ -1,14 +1,14 @@
 substitutions:
-  name: skyfandc01
-  friendly_name: SkyFan DC01
-  skyfan_model: SKY1203 # Options: SKY903 SKY1203 SKY1204 SKY1303 SKY1404 SKY1503
+  name: ceilingfandc01
+  friendly_name: Ceiling Fan DC01
+  ceilingfan_model: SKY1203 # Options: SKY903 SKY1203 SKY1204 SKY1303 SKY1404 SKY1503
   
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
   name_add_mac_suffix: true
   project:
-    name: lagomcontrol.skyfandc_esphome
+    name: lagomcontrol.esphome_wifi_ceilingfan_module
     version: "1.0"
 
 # Define the board for the compiler
@@ -19,7 +19,7 @@ esp32:
     
 # Dashboard import if you want to adopt the device on your esphome dashboard
 dashboard_import:
-  package_import_url: github://lagomcontrol/skyfandc_esphome/skyfandc.yaml@main
+  package_import_url: github://lagomcontrol/esphome_wifi_ceilingfan_module/ceiling_fan.yaml@main
   import_full_config: false
 
 # Enable logging
@@ -67,7 +67,7 @@ tuya:
       datapoint_type: bool
       then:
         - lambda: |-
-            id(skyfan_fan).make_call().set_state(x).perform();
+            id(ceilingfan_fan).make_call().set_state(x).perform();
 
     # Listen for speed changes from remote
     - sensor_datapoint: 3
@@ -75,14 +75,14 @@ tuya:
       then:
         - lambda: |-
             static const std::map<int, int> speed_map = {{1,1}, {6,2}, {2,3}, {3,4}, {4,5}, {5,6}};
-            id(skyfan_fan).make_call().set_speed(speed_map.at(x)).perform();
+            id(ceilingfan_fan).make_call().set_speed(speed_map.at(x)).perform();
 
     # Listen for direction changes from remote
     - sensor_datapoint: 8
       datapoint_type: enum
       then:
         - lambda: |-
-            id(skyfan_fan).make_call()
+            id(ceilingfan_fan).make_call()
               .set_direction((x == 0) ? fan::FanDirection::FORWARD : fan::FanDirection::REVERSE)
               .perform();
 
@@ -91,14 +91,14 @@ tuya:
       datapoint_type: bool
       then:
         - lambda: |-
-            id(skyfan_light).make_call().set_state(x).perform();
+            id(ceilingfan_light).make_call().set_state(x).perform();
 
     # Listen for brightness from remote
     - sensor_datapoint: 16
       datapoint_type: int
       then:
         - lambda: |-
-            id(skyfan_light).make_call().set_brightness(x / 5.0).perform();
+            id(ceilingfan_light).make_call().set_brightness(x / 5.0).perform();
 
     # Listen for color temp from remote
     - sensor_datapoint: 19
@@ -106,11 +106,11 @@ tuya:
       then:
         - lambda: |-
             float mireds = (x == 0) ? 200.0 : (x == 1) ? 250.0 : 333.3;
-            id(skyfan_light).make_call().set_color_temperature(mireds).perform();
+            id(ceilingfan_light).make_call().set_color_temperature(mireds).perform();
 
 light:
   - platform: cwww
-    id: skyfan_light
+    id: ceilingfan_light
     name: "${friendly_name} Light"
     cold_white: dummy_cold
     warm_white: dummy_warm
@@ -130,21 +130,21 @@ light:
 
     on_state:
       - lambda: |-
-          if (!id(skyfan_light).current_values.is_on()) return;
+          if (!id(ceilingfan_light).current_values.is_on()) return;
           
           // Handle brightness
-          auto brightness = id(skyfan_light).current_values.get_brightness();
+          auto brightness = id(ceilingfan_light).current_values.get_brightness();
           int discrete_level = (int)(brightness * 5);
           id(tuyamcu).set_integer_datapoint_value(16, discrete_level);
           
           // Handle color temp
-          auto color_temp_mireds = id(skyfan_light).current_values.get_color_temperature();
+          auto color_temp_mireds = id(ceilingfan_light).current_values.get_color_temperature();
           int enum_value = (color_temp_mireds > 291) ? 2 : (color_temp_mireds > 225) ? 1 : 0;
           id(tuyamcu).set_enum_datapoint_value(19, enum_value);
 
 fan:
   - platform: template
-    id: skyfan_fan
+    id: ceilingfan_fan
     name: ${friendly_name} Fan
     speed_count: 6
     has_direction: true
@@ -199,8 +199,8 @@ sensor:
       static const float SKY1404[7]  = {0,3.5,5.5,8,15,23,38};
       static const float SKY1503[7]  = {0,3.9,6,9,16,26,44.2};
  
-      return id(skyfan_fan).state 
-        ? ${skyfan_model}[(int)id(skyfan_fan).speed] 
+      return id(ceilingfan_fan).state 
+        ? ${ceilingfan_model}[(int)id(ceilingfan_fan).speed] 
         : 0.0f;
 
   # Estimated led power consumption based on data sheets
@@ -213,6 +213,7 @@ sensor:
     accuracy_decimals: 1
     update_interval: 30s
     lambda: |-
-      return id(skyfan_light).state 
-        ? id(skyfan_light).current_values.get_brightness() * 20.0f 
+      return id(ceilingfan_light).state 
+        ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
