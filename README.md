@@ -1,13 +1,13 @@
 # Ventair Skyfan DC - ESPHome Implementation
 
-ESPHome configuration for the Ventair SkyFan DC ceiling fan Tuya module (SKYAPPCM). This project replaces the cloud-dependent firmware with local control via ESPHome, enabling full local integration with Home Assistant.
+ESPHome configuration for the Ventair SkyFan DC ceiling fan Tuya module (SKYAPPCM). This project replaces the cloud-dependent firmware with local control via ESPHome, enabling full local integration with Home Assistant. To use the factory app you must use the factoty module. This is for Home Assistant integration only.
 
 This module can be bought Plug & Play from here:
 https://lagomcontrol.com.au/product/skyfan-esphome/
 
 ## Overview
 
-This project provides a complete ESPHome implementation for the Ventair Skyfan DC ceiling fan, which features:-
+This project provides a complete ESPHome implementation for the Ventair Skyfan DC ceiling fan, which features:
   - 6-speed DC motor fan control
   - Reversible fan direction
   - Integrated LED light with adjustable brightness (5 steps)
@@ -30,7 +30,7 @@ This project provides a complete ESPHome implementation for the Ventair Skyfan D
   - Color Temperature ( 3000K / 4000K / 5000K )
 
 ## Technical Details
-I wanted all controls to map to HA native Fan & Light UI elements without relying on secondary dropdowns. However because of how the Datapoint's work on this fan, we have to intercept all calls with lambda functions to map HA control values to the Tuya MCU values.
+I wanted all controls to map to HA native Fan & Light UI elements without relying on secondary dropdowns or external libraries. As a result, because of how the Datapoint's work on this MCU, we have to intercept all calls with lambda functions to map HA control values to the Tuya MCU values.
 
 - ### Color Temperature Mapping ( 19 )
   - 0 -> 5000K
@@ -49,3 +49,9 @@ I wanted all controls to map to HA native Fan & Light UI elements without relyin
   - 3 -> 66.6%
   - 4 -> 83.3%
   - 5 -> 100%
+
+- ## Credits
+
+Tuya Datapoints & Module Pinouts originally from here.
+https://github.com/SirMrDexter/skyfandc
+https://github.com/jeggleston1981/skyfandc
