@@ -1,4 +1,4 @@
-# WiFi Ceiling Fan ESPHome Module ( with SkyFan DC compatibility )
+# WiFi Ceiling Fan ESPHome Module ( Compatible with SkyFan DC )
 
 <b>WARNING: This firmware or it's associated module is not endorsed or approved by Ventair. It’s use will void any warranties you may have with them.
 NOTE: To use the OEM Ventair app you must use the factory module. This is for Home Assistant integration only and is not intended to provide OEM functionality.</b>
