@@ -1,7 +1,7 @@
 substitutions:
   name: skyfandc01
   friendly_name: SkyFan DC01
-  skyfan_model: SKY1203 # Options: SKY903 SKY1203 SKY1303 SKY1503 SKY1204 SKY1404
+  skyfan_model: SKY1203 # Options: SKY903 SKY1203 SKY1204 SKY1303 SKY1404 SKY1503
   
 esphome:
   name: ${name}
@@ -192,10 +192,10 @@ sensor:
     lambda: |-
       static const float SKY903[7]   = {0,3,4.8,7,12,19.5,32};
       static const float SKY1203[7]  = {0,3.6,5.4,8,15,22,32.5};
-      static const float SKY1303[7]  = {0,3.9,5.8,9,15.6,25.2,31.8};
-      static const float SKY1503[7]  = {0,3.9,6,9,16,26,44.2};
       static const float SKY1204[7]  = {0,3.8,5.8,9,17,27,30};
+      static const float SKY1303[7]  = {0,3.9,5.8,9,15.6,25.2,31.8};
       static const float SKY1404[7]  = {0,3.5,5.5,8,15,23,38};
+      static const float SKY1503[7]  = {0,3.9,6,9,16,26,44.2};
  
       return id(skyfan_fan).state 
         ? ${skyfan_model}[(int)id(skyfan_fan).speed] 
@@ -216,4 +216,5 @@ sensor:
         ? id(skyfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
     disabled_by_default: true
+
 
