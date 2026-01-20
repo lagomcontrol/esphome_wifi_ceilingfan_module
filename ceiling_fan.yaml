@@ -52,8 +52,8 @@ wifi:
 captive_portal:
 
 uart:
-  rx_pin: GPIO20
-  tx_pin: GPIO21
+  rx_pin: GPIO21
+  tx_pin: GPIO20
   baud_rate: 9600 
 
 status_led:
@@ -130,10 +130,6 @@ light:
 
     on_state:
       - lambda: |-
-          // Update power sensors
-          id(fan_power).update();
-          id(light_power).update();
-
           if (!id(ceilingfan_light).current_values.is_on()) return;
           
           // Handle brightness
@@ -145,6 +141,8 @@ light:
           auto color_temp_mireds = id(ceilingfan_light).current_values.get_color_temperature();
           int enum_value = (color_temp_mireds > 291) ? 2 : (color_temp_mireds > 225) ? 1 : 0;
           id(tuyamcu).set_enum_datapoint_value(19, enum_value);
+      - component.update: fan_power
+      - component.update: light_power
 
 fan:
   - platform: template
