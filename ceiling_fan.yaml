@@ -185,12 +185,12 @@ sensor:
   # Estimated fan power consumption based on data sheets
   - platform: template
     id: fan_power
-    name: ${friendly_name} input power
+    name: ${friendly_name} fan input power
     unit_of_measurement: "W"
     device_class: "power"
     state_class: "measurement"
     accuracy_decimals: 1
-    update_interval: 30s
+    update_interval: 5s
     lambda: |-
       static const float SKY903[7]   = {0,3,4.8,7,12,19.5,32};
       static const float SKY1203[7]  = {0,3.6,5.4,8,15,22,32.5};
@@ -206,14 +206,15 @@ sensor:
   # Estimated led power consumption based on data sheets
   - platform: template
     id: light_power
-    name: ${friendly_name} input power
+    name: ${friendly_name} light input power
     unit_of_measurement: "W"
     device_class: "power"
     state_class: "measurement"
     accuracy_decimals: 1
-    update_interval: 30s
+    update_interval: 5s
     lambda: |-
-      return id(ceilingfan_light).state 
+      return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
 
