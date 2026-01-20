@@ -52,8 +52,8 @@ wifi:
 captive_portal:
 
 uart:
-  rx_pin: GPIO21
-  tx_pin: GPIO20
+  rx_pin: GPIO20
+  tx_pin: GPIO21
   baud_rate: 9600 
 
 status_led:
@@ -130,6 +130,10 @@ light:
 
     on_state:
       - lambda: |-
+          // Update power sensors
+          id(fan_power).update();
+          id(light_power).update();
+
           if (!id(ceilingfan_light).current_values.is_on()) return;
           
           // Handle brightness
@@ -168,6 +172,10 @@ fan:
       - lambda: |-
           id(tuyamcu).set_enum_datapoint_value(8, (x == fan::FanDirection::FORWARD) ? 0 : 1);
 
+    on_state:
+      - component.update: fan_power
+      - component.update: light_power
+
 output:
   - platform: template
     id: dummy_warm
@@ -190,7 +198,6 @@ sensor:
     device_class: "power"
     state_class: "measurement"
     accuracy_decimals: 1
-    update_interval: 5s
     lambda: |-
       static const float SKY903[7]   = {0,3,4.8,7,12,19.5,32};
       static const float SKY1203[7]  = {0,3.6,5.4,8,15,22,32.5};
@@ -211,10 +218,7 @@ sensor:
     device_class: "power"
     state_class: "measurement"
     accuracy_decimals: 1
-    update_interval: 5s
     lambda: |-
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
-
-
