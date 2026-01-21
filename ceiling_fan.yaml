@@ -114,6 +114,7 @@ light:
     cold_white_color_temperature: 5000 K
     warm_white_color_temperature: 3000 K
     constant_brightness: true
+    disabled_by_default: true
     default_transition_length: 0s
 
     # Send commands to device
@@ -236,6 +237,7 @@ sensor:
     id: light_power
     name: ${friendly_name} light input power
     unit_of_measurement: "W"
+    disabled_by_default: true
     device_class: "power"
     state_class: "measurement"
     accuracy_decimals: 1
