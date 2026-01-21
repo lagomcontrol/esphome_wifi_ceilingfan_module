@@ -212,6 +212,12 @@ select:
     entity_category: config
 
 sensor:
+  # WiFi signal strength
+  - platform: wifi_signal
+    name: "${friendly_name} WiFi Signal"
+    update_interval: 60s
+    entity_category: diagnostic
+
   # Estimated fan power consumption based on data sheets
   - platform: template
     id: fan_power
@@ -247,6 +253,7 @@ sensor:
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
 
 
 
