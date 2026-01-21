@@ -39,7 +39,7 @@ web_server:
 
 # Enable WiFi and AP for captive portal
 wifi:
-  Commented our to force wiFi Captive Portal. Reinstate once set in secrets
+  # Commented out to force wiFi captive portal on new units. Reinstate once credentials set in secrets
   # ssid: !secret ssid
   # password: !secret password
   # domain: !secret domain
@@ -247,6 +247,7 @@ sensor:
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
 
 
 
