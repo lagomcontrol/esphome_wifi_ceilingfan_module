@@ -18,7 +18,7 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: !secret api_key
+   # key: !secret api_key // uncomment when Loading into ESPHome
 
 # Enable OTA
 ota:
@@ -30,9 +30,9 @@ web_server:
 
 # Enable WiFi and AP for captive portal
 wifi:
-  ssid: !secret ssid
-  password: !secret password
-  domain: !secret domain
+ # ssid: !secret ssid // uncomment when Loading into ESPHome
+ # password: !secret password // uncomment when Loading into ESPHome
+ # domain: !secret domain // uncomment when Loading into ESPHome
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
