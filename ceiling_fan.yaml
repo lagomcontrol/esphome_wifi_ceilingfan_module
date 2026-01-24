@@ -6,6 +6,41 @@ esphome:
   name: ${name}
   friendly_name: ${friendly_name}
 
+  # Power Restore State Handling
+  on_boot:
+    - priority: 600  # Run early, before UART/Tuya connection
+      then:
+        # Read and store light power on preference
+        - lambda: |-
+            std::string light_setting = id(light_power_on_state).current_option();
+            id(light_boot_state) = (light_setting == "Always On") ? true : 
+                                    (light_setting == "Always Off") ? false : 
+                                    id(ceilingfan_light).current_values.is_on();
+        
+        # Read and store fan power on preference
+        - lambda: |-
+            std::string fan_setting = id(fan_power_on_state).current_option();
+            id(fan_boot_state) = (fan_setting == "Always On") ? true : 
+                                  (fan_setting == "Always Off") ? false : 
+                                  id(ceilingfan_fan).state;
+    
+    - priority: -100  # Run late, after Tuya connection established
+      then:
+        # Send stored boot states to MCU
+        - lambda: |-
+            id(tuyamcu).set_boolean_datapoint_value(15, id(light_boot_state));
+            id(tuyamcu).set_boolean_datapoint_value(1, id(fan_boot_state));
+
+globals:
+  - id: light_boot_state
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: fan_boot_state
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
 # Define the board for the compiler
 esp32:
   board: esp32-c3-devkitm-1
@@ -116,6 +151,7 @@ light:
     constant_brightness: true
     disabled_by_default: true
     default_transition_length: 0s
+    restore_mode: RESTORE_DEFAULT_OFF
 
     # Send commands to device
     on_turn_on:
@@ -149,6 +185,7 @@ fan:
     speed_count: 6
     has_direction: true
     has_oscillating: false
+    restore_mode: RESTORE_DEFAULT_OFF
 
     # Send commands to device
     on_speed_set:
@@ -202,6 +239,32 @@ select:
     icon: "mdi:fan"
     entity_category: config
 
+  - platform: template
+    name: "${friendly_name} Light Power On State"
+    id: light_power_on_state
+    icon: mdi:light-recessed
+    entity_category: config
+    optimistic: true
+    options:
+      - "Restore"
+      - "Always On"
+      - "Always Off"
+    initial_option: "Restore"
+    restore_value: true
+
+  - platform: template
+    name: "${friendly_name} Fan Power On State"
+    id: fan_power_on_state
+    icon: mdi:fan
+    entity_category: config
+    optimistic: true
+    options:
+      - "Restore"
+      - "Always On"
+      - "Always Off"
+    initial_option: "Restore"
+    restore_value: true
+    
 sensor:
   # WiFi signal strength
   - platform: wifi_signal
@@ -245,3 +308,4 @@ sensor:
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
