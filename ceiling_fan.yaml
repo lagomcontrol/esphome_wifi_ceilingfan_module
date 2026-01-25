@@ -57,15 +57,7 @@ esphome:
               fan_call.set_direction(id(boot_restore_data)[5] ? fan::FanDirection::REVERSE : fan::FanDirection::FORWARD);
             }
             fan_call.perform();
-        
-        # Log restore data
-        - lambda: |-
-            ESP_LOGI("boot_restore", "Restore data sent to MCU:");
-            ESP_LOGI("boot_restore", "  Light: on=%d, brightness=%d, temp=%d", 
-                     id(boot_restore_data)[0], id(boot_restore_data)[1], id(boot_restore_data)[2]);
-            ESP_LOGI("boot_restore", "  Fan: on=%d, speed=%d, direction=%d", 
-                     id(boot_restore_data)[3], id(boot_restore_data)[4], id(boot_restore_data)[5]);
-
+            
 globals:
   - id: boot_restore_data
     type: int[6]  # [light_on, light_brightness, light_temp, fan_on, fan_speed, fan_direction]
@@ -339,6 +331,7 @@ sensor:
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
 
 
 
