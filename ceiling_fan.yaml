@@ -5,7 +5,6 @@ substitutions:
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
-
   # Power Restore State Handling
   on_boot:
     - priority: 200  # Run after components initialized, before UART/Tuya connection
@@ -30,27 +29,42 @@ esphome:
                                        id(ceilingfan_fan).state ? 1 : 0;
             
             // Fan speed and direction
-            int speeds[] = {0, 1, 6, 2, 3, 4, 5};
-            id(boot_restore_data)[4] = speeds[(int)id(ceilingfan_fan).speed];
+            id(boot_restore_data)[4] = (int)id(ceilingfan_fan).speed;
             id(boot_restore_data)[5] = (id(ceilingfan_fan).direction == fan::FanDirection::FORWARD) ? 0 : 1;
     
     - priority: -100  # Run late, after Tuya connection established
       then:
-        # Send stored restoration data to MCU
+        # Wait for MCU to finish sending initial state
+        - delay: 3s
+        
+        # Restore ESPHome components (handlers will send datapoints to MCU)
         - lambda: |-
             // Restore light
-            id(tuyamcu).set_boolean_datapoint_value(15, id(boot_restore_data)[0]);
+            auto light_call = id(ceilingfan_light).make_call();
+            light_call.set_state(id(boot_restore_data)[0]);
             if (id(boot_restore_data)[0]) {
-              id(tuyamcu).set_integer_datapoint_value(16, id(boot_restore_data)[1]);
-              id(tuyamcu).set_enum_datapoint_value(19, id(boot_restore_data)[2]);
+              light_call.set_brightness(id(boot_restore_data)[1] / 5.0);
+              float mireds[] = {200.0, 250.0, 333.3};
+              light_call.set_color_temperature(mireds[id(boot_restore_data)[2]]);
             }
+            light_call.perform();
             
             // Restore fan
-            id(tuyamcu).set_boolean_datapoint_value(1, id(boot_restore_data)[3]);
+            auto fan_call = id(ceilingfan_fan).make_call();
+            fan_call.set_state(id(boot_restore_data)[3]);
             if (id(boot_restore_data)[3]) {
-              id(tuyamcu).set_integer_datapoint_value(3, id(boot_restore_data)[4]);
-              id(tuyamcu).set_enum_datapoint_value(8, id(boot_restore_data)[5]);
+              fan_call.set_speed(id(boot_restore_data)[4]);
+              fan_call.set_direction(id(boot_restore_data)[5] ? fan::FanDirection::REVERSE : fan::FanDirection::FORWARD);
             }
+            fan_call.perform();
+        
+        # Log restore data
+        - lambda: |-
+            ESP_LOGI("boot_restore", "Restore data sent to MCU:");
+            ESP_LOGI("boot_restore", "  Light: on=%d, brightness=%d, temp=%d", 
+                     id(boot_restore_data)[0], id(boot_restore_data)[1], id(boot_restore_data)[2]);
+            ESP_LOGI("boot_restore", "  Fan: on=%d, speed=%d, direction=%d", 
+                     id(boot_restore_data)[3], id(boot_restore_data)[4], id(boot_restore_data)[5]);
 
 globals:
   - id: boot_restore_data
@@ -325,5 +339,6 @@ sensor:
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
 
 
