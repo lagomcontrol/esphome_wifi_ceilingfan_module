@@ -287,6 +287,38 @@ select:
       - "Always Off"
     initial_option: "Restore"
     restore_value: true
+
+  - platform: tuya
+    id: datapoint_mode
+    tuya_id: tuyamcu
+    name: ${friendly_name} Mode
+    enum_datapoint: 2
+    options:
+      0: "Normal"
+      1: "Eco"
+      2: "Sleep"
+    disabled_by_default: true
+
+  - platform: tuya
+    id: datapoint_timer
+    tuya_id: tuyamcu
+    name: ${friendly_name} Timer
+    enum_datapoint: 22
+    options:
+      0: "Off"
+      1: "1 Hour"
+      2: "2 Hours"
+      3: "3 Hours"
+      4: "4 Hours"
+      5: "5 Hours"
+      6: "6 Hours"
+      7: "7 Hours"
+      8: "8 Hours"
+      9: "9 Hours"
+      10: "10 Hours"
+      11: "11 Hours"
+      12: "12 Hours"
+    disabled_by_default: true
     
 sensor:
   # WiFi signal strength
@@ -331,6 +363,7 @@ sensor:
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
 
 
 
