@@ -123,6 +123,7 @@ tuya:
       datapoint_type: int
       then:
         - lambda: |-
+            if (x == 0) return;
             static const std::map<int, int> speed_map = {{1,1}, {6,2}, {2,3}, {3,4}, {4,5}, {5,6}};
             id(ceilingfan_fan).make_call().set_speed(speed_map.at(x)).perform();
         - component.update: light_power
@@ -364,6 +365,7 @@ sensor:
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
+
 
 
 
