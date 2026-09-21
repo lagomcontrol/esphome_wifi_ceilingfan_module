@@ -5,6 +5,7 @@ substitutions:
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
   # Power Restore State Handling
   on_boot:
     - priority: 200  # Run after components initialized, before UART/Tuya connection
@@ -119,12 +120,15 @@ tuya:
         - component.update: fan_power
 
     # Listen for speed changes from remote
+    # Linear map (matches on_speed_set). Bounds-checked so an unexpected
+    # MCU value can't throw / drive an out-of-range speed.
     - sensor_datapoint: 3
       datapoint_type: int
       then:
         - lambda: |-
-            static const std::map<int, int> speed_map = {{0,0}, {1,1}, {6,2}, {2,3}, {3,4}, {4,5}, {5,6}};
-            id(ceilingfan_fan).make_call().set_speed(speed_map.at(x)).perform();
+            if (x >= 0 && x <= 6) {
+              id(ceilingfan_fan).make_call().set_speed(x).perform();
+            }
         - component.update: light_power
         - component.update: fan_power
 
@@ -213,7 +217,7 @@ fan:
     # Send commands to device
     on_speed_set:
       - lambda: |-
-          int speeds[] = {0, 1, 6, 2, 3, 4, 5};
+          int speeds[] = {0, 1, 2, 3, 4, 5, 6};
           id(tuyamcu).set_integer_datapoint_value(3, speeds[x]);
 
     on_turn_on:
@@ -364,12 +368,3 @@ sensor:
       return id(ceilingfan_light).current_values.is_on() 
         ? id(ceilingfan_light).current_values.get_brightness() * 20.0f 
         : 0.0f;
-
-
-
-
-
-
-
-
-
